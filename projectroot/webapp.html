@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Snake Game</title>
+<style>
+body { background-color: #f0f0f0; }
+#game-board { background-color: #fff; border: 2px solid #000; position: relative; margin-top: 5%; margin-left: 36.5%; margin-right: 36%;}
+.snake-part { background-color: green; width: 20px; height: 20px; position: absolute; }
+.food { background-color: red; width: 20px; height: 20px; position: absolute; }
+#restart-button { position: absolute; top: 32%; left: 10px; left: 48%;}
+</style>
+<link rel="stylesheet" href="./css/scratch.css">
+</head>
+<body>
+    <div class="header">
+        <a href="resume.html" class="webnav">Resume</a>
+        <a href="bugs.html" class="webnav">Favorite Bugs</a>
+        <a href="index.html" class="webnav">Home</a>
+        <a href="#top" class="current">Web App</a>
+    </div>
+    <div class="title" id="top">
+    <h1>Snake Game</h1>
+    </div>
+    <div id="game-board"></div>
+    <button id="restart-button">Restart</button>
+    <script>
+    const boardSize = 20;
+    let snake = [{ x: 0, y: 0 }];
+    let food = { x: 5, y: 5 };
+    let direction = 'right';
+    let score = 0;
+    let gameInterval;
+
+    const board = document.getElementById('game-board');
+    board.style.width = (boardSize * 20) + 'px';
+    board.style.height = (boardSize * 20) + 'px';
+
+    const restartButton = document.getElementById('restart-button');
+    restartButton.style.display = 'none';
+
+    function createBoard() {
+        for (let i = 0; i < boardSize * boardSize; i++) {
+            const div = document.createElement('div');
+            board.appendChild(div);
+        }
+    }
+
+    function draw() {
+        board.innerHTML = '';
+        snake.forEach(part => {
+            const div = document.createElement('div');
+            div.className = 'snake-part';
+            div.style.left = part.x * 20 + 'px';
+            div.style.top = part.y * 20 + 'px';
+            board.appendChild(div);
+        });
+
+        const foodDiv = document.createElement('div');
+        foodDiv.className = 'food';
+        foodDiv.style.left = food.x * 20 + 'px';
+        foodDiv.style.top = food.y * 20 + 'px';
+        board.appendChild(foodDiv);
+    }
+
+    function move() {
+        const head = { ...snake[0] };
+        switch (direction) {
+            case 'up': head.y--; break;
+            case 'down': head.y++; break;
+            case 'left': head.x--; break;
+            case 'right': head.x++; break;
+        }
+
+        if (head.x < 0 || head.x >= boardSize || head.y < 0 || head.y >= boardSize || checkCollision(head)) {
+            clearInterval(gameInterval);
+            alert('Game Over! Score: ' + score);
+            restartButton.style.display = 'block';
+            return;
+        }
+
+        if (head.x === food.x && head.y === food.y) {
+            score++;
+            food = generateFood();
+        } else {
+            snake.pop();
+        }
+        snake.unshift(head);
+        draw();
+    }
+
+    function checkCollision(head) {
+        return snake.some(part => part.x === head.x && part.y === head.y && part !== head);
+    }
+
+    function generateFood() {
+        let newFood;
+        do {
+            newFood = { x: Math.floor(Math.random() * boardSize), y: Math.floor(Math.random() * boardSize) };
+        } while (snake.some(part => part.x === newFood.x && part.y === newFood.y));
+        return newFood;
+    }
+
+    window.addEventListener('keydown', e => {
+        switch (e.key) {
+            case 'ArrowUp': if (direction !== 'down') direction = 'up'; break;
+            case 'ArrowDown': if (direction !== 'up') direction = 'down'; break;
+            case 'ArrowLeft': if (direction !== 'right') direction = 'left'; break;
+            case 'ArrowRight': if (direction !== 'left') direction = 'right'; break;
+        }
+    });
+
+    restartButton.addEventListener('click', () => {
+        snake = [{ x: 0, y: 0 }];
+        food = generateFood();
+        direction = 'right';
+        score = 0;
+        restartButton.style.display = 'none';
+        gameInterval = setInterval(move, 100);
+        draw();
+    });
+
+    createBoard();
+    gameInterval = setInterval(move, 100);
+    draw();
+    </script>
+</body>
+</html>
